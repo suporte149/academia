@@ -1,17 +1,6 @@
 {
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/overview", "destination": "/index.html" },
-    { "source": "/assessment", "destination": "/index.html" },
-    { "source": "/mentor", "destination": "/index.html" },
-    { "source": "/passport", "destination": "/index.html" },
-    { "source": "/additive-lab", "destination": "/index.html" },
-    { "source": "/robotics-lab", "destination": "/index.html" },
-    { "source": "/challenges", "destination": "/index.html" },
-    { "source": "/impact", "destination": "/index.html" },
-    { "source": "/employers", "destination": "/index.html" },
-    { "source": "/funding", "destination": "/index.html" },
-    { "source": "/governance", "destination": "/index.html" },
-    { "source": "/architecture", "destination": "/index.html" }
+    { "source": "/(.*)", "destination": "/" }
   ]
 }
