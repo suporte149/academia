@@ -1,0 +1,75 @@
+name: Normalize NEXUS FORGE OS assets
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [nexus-forge-os]
+    paths:
+      - '.github/workflows/normalize-nexus-forge-assets.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  normalize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: nexus-forge-os
+
+      - name: Decode compressed frontend assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat appgz.* | tr -d '\n\r' | base64 -d > app.js.gz
+          gzip -dc app.js.gz > app.js
+          cat cssgz.* | tr -d '\n\r' | base64 -d > styles.css.gz
+          gzip -dc styles.css.gz > styles.css
+          rm -f app.js.gz styles.css.gz
+
+      - name: Replace runtime decompressor with standard assets
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('index.html')
+          html = p.read_text(encoding='utf-8')
+          start = html.find('<script>\nasync function decodeGzipParts')
+          if start == -1:
+              start = html.find('<script>\r\nasync function decodeGzipParts')
+          if start == -1:
+              raise SystemExit('bootstrap script not found')
+          end = html.find('</script>', start)
+          if end == -1:
+              raise SystemExit('bootstrap closing script not found')
+          end += len('</script>')
+          replacement = '<link rel="stylesheet" href="/styles.css">\n<script src="/app.js" defer></script>'
+          html = html[:start] + replacement + html[end:]
+          html = html.replace('<div id="app"><div style="font-family:system-ui;background:#0d1114;color:#f3f7f9;min-height:100vh;display:grid;place-items:center">Loading NEXUS FORGE OS…</div></div>', '<div id="app"></div>')
+          p.write_text(html, encoding='utf-8')
+
+      - name: Verify normalized files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s app.js
+          test -s styles.css
+          grep -q 'src="/app.js"' index.html
+          grep -q 'href="/styles.css"' index.html
+          ! grep -q 'DecompressionStream' index.html
+          ! grep -q 'eval)(js' index.html
+          echo "Normalized frontend assets are ready."
+
+      - name: Commit normalized bundle
+        shell: bash
+        run: |
+          git config user.name "nexus-forge-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html app.js styles.css
+          if git diff --cached --quiet; then
+            echo "Nothing to commit"
+          else
+            git commit -m "fix: replace compressed eval loader with standard frontend assets"
+            git push origin HEAD:nexus-forge-os
+          fi
