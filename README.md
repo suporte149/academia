@@ -8,4 +8,4 @@ This branch intentionally preserves the independent static deployment used after
 
 Production: https://nexus-forge-os-six.vercel.app
 
-Deployment trigger: 2026-08-30T12:09-03:00
+Deployment trigger: 2026-08-30T12:56-03:00
