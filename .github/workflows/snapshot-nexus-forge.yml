@@ -1,0 +1,77 @@
+name: Snapshot NEXUS FORGE OS production
+
+on:
+  push:
+    branches:
+      - nexus-forge-os
+    paths:
+      - '.github/workflows/snapshot-nexus-forge.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: nexus-forge-os
+
+      - name: Download current production snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://nexus-forge-os-six.vercel.app'
+          curl -fL --retry 3 "$BASE/" -o index.html
+          for f in appgz.00 appgz.01 appgz.02 appgz.03 appgz.04 appgz.05 appgz.06 cssgz.00 cssgz.01; do
+            curl -fL --retry 3 "$BASE/$f" -o "$f"
+          done
+
+          cat > vercel.json <<'EOF'
+          {
+            "cleanUrls": true,
+            "rewrites": [
+              { "source": "/overview", "destination": "/index.html" },
+              { "source": "/assessment", "destination": "/index.html" },
+              { "source": "/mentor", "destination": "/index.html" },
+              { "source": "/passport", "destination": "/index.html" },
+              { "source": "/additive-lab", "destination": "/index.html" },
+              { "source": "/robotics-lab", "destination": "/index.html" },
+              { "source": "/challenges", "destination": "/index.html" },
+              { "source": "/impact", "destination": "/index.html" },
+              { "source": "/employers", "destination": "/index.html" },
+              { "source": "/funding", "destination": "/index.html" },
+              { "source": "/governance", "destination": "/index.html" },
+              { "source": "/architecture", "destination": "/index.html" }
+            ]
+          }
+          EOF
+
+          cat > README.md <<'EOF'
+          # NEXUS FORGE OS
+
+          Version-controlled production snapshot of NEXUS FORGE GLOBAL — AI, Robotics & Advanced Manufacturing for Inclusive Prosperity.
+
+          Lead applicant / technology owner: YQN Comércio e Serviços Ltda.
+
+          This branch intentionally preserves the independent static deployment used after removing the Lovable credit dependency. Demonstration and sample values remain labelled DEMO / SAMPLE DATA, future programme values TARGET, and unimplemented physical integrations FUTURE CONNECTORS.
+
+          Production: https://nexus-forge-os-six.vercel.app
+          EOF
+
+      - name: Commit snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'nexus-forge-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add index.html appgz.* cssgz.* vercel.json README.md
+          if git diff --cached --quiet; then
+            echo 'Snapshot already current.'
+            exit 0
+          fi
+          git commit -m 'chore: snapshot NEXUS FORGE OS production'
+          git push origin HEAD:nexus-forge-os
