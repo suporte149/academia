@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NEXUS FORGE GLOBAL — AI, Robotics & Advanced Manufacturing</title>
+  <meta name="description" content="NEXUS FORGE GLOBAL — AI, Robotics & Advanced Manufacturing for Inclusive Prosperity. Demonstration platform by YQN Comércio e Serviços Ltda." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<div id="app"><div style="font-family:system-ui;background:#0d1114;color:#f3f7f9;min-height:100vh;display:grid;place-items:center">Loading NEXUS FORGE OS…</div></div>
+<script>
+async function decodeGzipParts(urls){
+  const chunks=await Promise.all(urls.map(async u=>{const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw new Error('Failed '+u+' '+r.status);return (await r.text()).trim()}));
+  const b64=chunks.join('');
+  const bin=atob(b64); const bytes=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+  const ds=new DecompressionStream('gzip'); return await new Response(new Blob([bytes]).stream().pipeThrough(ds)).text();
+}
+(async()=>{try{
+  const appParts=['/appgz.00','/appgz.01','/appgz.02','/appgz.03','/appgz.04','/appgz.05','/appgz.06'];
+  const cssParts=['/cssgz.00','/cssgz.01'];
+  const [css,js]=await Promise.all([decodeGzipParts(cssParts),decodeGzipParts(appParts)]);
+  const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);(0,eval)(js);
+}catch(e){document.getElementById('app').innerHTML='<div style="font-family:system-ui;background:#0d1114;color:#f3f7f9;min-height:100vh;padding:40px"><h1>NEXUS FORGE OS</h1><p>Unable to load the demonstration bundle.</p><pre>'+String(e).replace(/[&<>]/g,s=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[s]))+'</pre></div>'}})();
+</script>
+</body>
+</html>
